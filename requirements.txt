@@ -8,4 +8,8 @@ tqdm
 matplotlib
 seaborn
 datasets
-
+scipy
+statsmodels
+jupyterlab
+Pillow
+Ipykernel
