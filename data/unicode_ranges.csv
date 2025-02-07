@@ -1,0 +1,210 @@
+Group name,Block range
+Basic Latin,U+0 - U+7F
+Latin-1 Supplement,U+80 - U+FF
+Latin Extended-A,U+100 - U+17F
+Latin Extended-B,U+180 - U+24F
+IPA Extensions,U+250 - U+2AF
+Spacing Modifier Letters,U+2B0 - U+2FF
+Combining Diacritical Marks,U+300 - U+36F
+Greek and Coptic,U+370 - U+3FF
+Cyrillic,U+400 - U+4FF
+Cyrillic Supplement,U+500 - U+527
+Armenian,U+531 - U+58A
+Hebrew,U+591 - U+5F4
+Arabic,U+600 - U+6FF
+Syriac,U+700 - U+74F
+Arabic Supplement,U+750 - U+77F
+Thaana,U+780 - U+7B1
+NKo,U+7C0 - U+7FA
+Samaritan,U+800 - U+83E
+Mandaic,U+840 - U+85E
+Devanagari,U+900 - U+97F
+Bengali,U+981 - U+9FB
+Gurmukhi,U+A01 - U+A75
+Gujarati,U+A81 - U+AF1
+Oriya,U+B01 - U+B77
+Tamil,U+B82 - U+BFA
+Telugu,U+C01 - U+C7F
+Kannada,U+C82 - U+CF2
+Malayalam,U+D02 - U+D7F
+Sinhala,U+D82 - U+DF4
+Thai,U+E01 - U+E5B
+Lao,U+E81 - U+EDD
+Tibetan,U+F00 - U+FDA
+Myanmar,U+1000 - U+109F
+Georgian,U+10A0 - U+10FC
+Hangul Jamo,U+1100 - U+11FF
+Ethiopic,U+1200 - U+137C
+Ethiopic Supplement,U+1380 - U+1399
+Cherokee,U+13A0 - U+13F4
+Unified Canadian Aboriginal Syllabics,U+1400 - U+167F
+Ogham,U+1680 - U+169C
+Runic,U+16A0 - U+16F0
+Tagalog,U+1700 - U+1714
+Hanunoo,U+1720 - U+1736
+Buhid,U+1740 - U+1753
+Tagbanwa,U+1760 - U+1773
+Khmer,U+1780 - U+17F9
+Mongolian,U+1800 - U+18AA
+Unified Canadian Aboriginal Syllabics Extended,U+18B0 - U+18F5
+Limbu,U+1900 - U+194F
+Tai Le,U+1950 - U+1974
+New Tai Lue,U+1980 - U+19DF
+Khmer Symbols,U+19E0 - U+19FF
+Buginese,U+1A00 - U+1A1F
+Tai Tham,U+1A20 - U+1AAD
+Balinese,U+1B00 - U+1B7C
+Sundanese,U+1B80 - U+1BB9
+Batak,U+1BC0 - U+1BFF
+Lepcha,U+1C00 - U+1C4F
+Ol Chiki,U+1C50 - U+1C7F
+Vedic Extensions,U+1CD0 - U+1CF2
+Phonetic Extensions,U+1D00 - U+1D7F
+Phonetic Extensions Supplement,U+1D80 - U+1DBF
+Combining Diacritical Marks Supplement,U+1DC0 - U+1DFF
+Latin Extended Additional,U+1E00 - U+1EFF
+Greek Extended,U+1F00 - U+1FFE
+General Punctuation,U+2000 - U+206F
+Superscripts and Subscripts,U+2070 - U+209C
+Currency Symbols,U+20A0 - U+20B9
+Combining Diacritical Marks for Symbols,U+20D0 - U+20F0
+Letterlike Symbols,U+2100 - U+214F
+Number Forms,U+2150 - U+2189
+Arrows,U+2190 - U+21FF
+Mathematical Operators,U+2200 - U+22FF
+Miscellaneous Technical,U+2300 - U+23F3
+Control Pictures,U+2400 - U+2426
+Optical Character Recognition,U+2440 - U+244A
+Enclosed Alphanumerics,U+2460 - U+24FF
+Box Drawing,U+2500 - U+257F
+Block Elements,U+2580 - U+259F
+Geometric Shapes,U+25A0 - U+25FF
+Miscellaneous Symbols,U+2600 - U+26FF
+Dingbats,U+2701 - U+27BF
+Miscellaneous Mathematical Symbols-A,U+27C0 - U+27EF
+Supplemental Arrows-A,U+27F0 - U+27FF
+Braille Patterns,U+2800 - U+28FF
+Supplemental Arrows-B,U+2900 - U+297F
+Miscellaneous Mathematical Symbols-B,U+2980 - U+29FF
+Supplemental Mathematical Operators,U+2A00 - U+2AFF
+Miscellaneous Symbols and Arrows,U+2B00 - U+2B59
+Glagolitic,U+2C00 - U+2C5E
+Latin Extended-C,U+2C60 - U+2C7F
+Coptic,U+2C80 - U+2CFF
+Georgian Supplement,U+2D00 - U+2D25
+Tifinagh,U+2D30 - U+2D7F
+Ethiopic Extended,U+2D80 - U+2DDE
+Cyrillic Extended-A,U+2DE0 - U+2DFF
+Supplemental Punctuation,U+2E00 - U+2E31
+CJK Radicals Supplement,U+2E80 - U+2EF3
+Kangxi Radicals,U+2F00 - U+2FD5
+Ideographic Description Characters,U+2FF0 - U+2FFB
+CJK Symbols and Punctuation,U+3000 - U+303F
+Hiragana,U+3041 - U+309F
+Katakana,U+30A0 - U+30FF
+Bopomofo,U+3105 - U+312D
+Hangul Compatibility Jamo,U+3131 - U+318E
+Kanbun,U+3190 - U+319F
+Bopomofo Extended,U+31A0 - U+31BA
+CJK Strokes,U+31C0 - U+31E3
+Katakana Phonetic Extensions,U+31F0 - U+31FF
+Enclosed CJK Letters and Months,U+3200 - U+32FE
+CJK Compatibility,U+3300 - U+33FF
+CJK Unified Ideographs Extension A,U+3400 - U+4DB5
+Yijing Hexagram Symbols,U+4DC0 - U+4DFF
+CJK Unified Ideographs,U+4E00 - U+9FCB
+Yi Syllables,U+A000 - U+A48C
+Yi Radicals,U+A490 - U+A4C6
+Lisu,U+A4D0 - U+A4FF
+Vai,U+A500 - U+A62B
+Cyrillic Extended-B,U+A640 - U+A697
+Bamum,U+A6A0 - U+A6F7
+Modifier Tone Letters,U+A700 - U+A71F
+Latin Extended-D,U+A720 - U+A7FF
+Syloti Nagri,U+A800 - U+A82B
+Common Indic Number Forms,U+A830 - U+A839
+Phags-pa,U+A840 - U+A877
+Saurashtra,U+A880 - U+A8D9
+Devanagari Extended,U+A8E0 - U+A8FB
+Kayah Li,U+A900 - U+A92F
+Rejang,U+A930 - U+A95F
+Hangul Jamo Extended-A,U+A960 - U+A97C
+Javanese,U+A980 - U+A9DF
+Cham,U+AA00 - U+AA5F
+Myanmar Extended-A,U+AA60 - U+AA7B
+Tai Viet,U+AA80 - U+AADF
+Ethiopic Extended-A,U+AB01 - U+AB2E
+Meetei Mayek,U+ABC0 - U+ABF9
+Hangul Syllables,U+AC00 - U+D7A3
+Hangul Jamo Extended-B,U+D7B0 - U+D7FB
+High Surrogates,U+D800 - U+DB7F
+High Private Use Surrogates,U+DB80 - U+DBFF
+Low Surrogates,U+DC00 - U+DFFF
+Private Use Area,U+E000 - U+F8FF
+CJK Compatibility Ideographs,U+F900 - U+FAD9
+Alphabetic Presentation Forms,U+FB00 - U+FB4F
+Arabic Presentation Forms-A,U+FB50 - U+FDFD
+Variation Selectors,U+FE00 - U+FE0F
+Vertical Forms,U+FE10 - U+FE19
+Combining Half Marks,U+FE20 - U+FE26
+CJK Compatibility Forms,U+FE30 - U+FE4F
+Small Form Variants,U+FE50 - U+FE6B
+Arabic Presentation Forms-B,U+FE70 - U+FEFF
+Halfwidth and Fullwidth Forms,U+FF01 - U+FFEE
+Specials,U+FFF9 - U+FFFD
+Linear B Syllabary,U+10000 - U+1005D
+Linear B Ideograms,U+10080 - U+100FA
+Aegean Numbers,U+10100 - U+1013F
+Ancient Greek Numbers,U+10140 - U+1018A
+Ancient Symbols,U+10190 - U+1019B
+Phaistos Disc,U+101D0 - U+101FD
+Lycian,U+10280 - U+1029C
+Carian,U+102A0 - U+102D0
+Old Italic,U+10300 - U+10323
+Gothic,U+10330 - U+1034A
+Ugaritic,U+10380 - U+1039F
+Old Persian,U+103A0 - U+103D5
+Deseret,U+10400 - U+1044F
+Shavian,U+10450 - U+1047F
+Osmanya,U+10480 - U+104A9
+Cypriot Syllabary,U+10800 - U+1083F
+Imperial Aramaic,U+10840 - U+1085F
+Phoenician,U+10900 - U+1091F
+Lydian,U+10920 - U+1093F
+Kharoshthi,U+10A00 - U+10A58
+Old South Arabian,U+10A60 - U+10A7F
+Avestan,U+10B00 - U+10B3F
+Inscriptional Parthian,U+10B40 - U+10B5F
+Inscriptional Pahlavi,U+10B60 - U+10B7F
+Old Turkic,U+10C00 - U+10C48
+Rumi Numeral Symbols,U+10E60 - U+10E7E
+Brahmi,U+11000 - U+1106F
+Kaithi,U+11080 - U+110C1
+Cuneiform,U+12000 - U+1236E
+Cuneiform Numbers and Punctuation,U+12400 - U+12473
+Egyptian Hieroglyphs,U+13000 - U+1342E
+Bamum Supplement,U+16800 - U+16A38
+Kana Supplement,U+1B000 - U+1B001
+Byzantine Musical Symbols,U+1D000 - U+1D0F5
+Musical Symbols,U+1D100 - U+1D1DD
+Ancient Greek Musical Notation,U+1D200 - U+1D245
+Tai Xuan Jing Symbols,U+1D300 - U+1D356
+Counting Rod Numerals,U+1D360 - U+1D371
+Mathematical Alphanumeric Symbols,U+1D400 - U+1D7FF
+Mahjong Tiles,U+1F000 - U+1F02B
+Domino Tiles,U+1F030 - U+1F093
+Playing Cards,U+1F0A0 - U+1F0DF
+Enclosed Alphanumeric Supplement,U+1F100 - U+1F1FF
+Enclosed Ideographic Supplement,U+1F200 - U+1F251
+Miscellaneous Symbols And Pictographs,U+1F300 - U+1F5FF
+Emoticons,U+1F601 - U+1F64F
+Transport And Map Symbols,U+1F680 - U+1F6C5
+Alchemical Symbols,U+1F700 - U+1F773
+CJK Unified Ideographs Extension B,U+20000 - U+2A6D6
+CJK Unified Ideographs Extension C,U+2A700 - U+2B734
+CJK Unified Ideographs Extension D,U+2B740 - U+2B81D
+CJK Compatibility Ideographs Supplement,U+2F800 - U+2FA1D
+Tags,U+E0001 - U+E007F
+Variation Selectors Supplement,U+E0100 - U+E01EF
+Supplementary Private Use Area-A,U+F0000 - U+FFFFD
+Supplementary Private Use Area-B,U+100000 - U+10FFFD
