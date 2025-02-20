@@ -1,0 +1,22 @@
+name: multilang-code-vul-detection
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+      - torch
+      - git+https://github.com/huggingface/transformers.git
+      - pandas
+      - numpy
+      - scikit-learn
+      - datasets
+      - tokenizers
+      - tqdm
+      - evaluate
+      - huggingface_hub
+      - accelerate
+      - jupyter
+      - notebook
+      - wandb
+      - matplotlib
+      - seaborn
+      
