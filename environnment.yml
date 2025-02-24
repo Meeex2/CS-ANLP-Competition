@@ -2,6 +2,7 @@ name: multilang-code-vul-detection
 dependencies:
   - python=3.9
   - pip
+  - fasttext -c conda-forge
   - pip:
       - torch
       - git+https://github.com/huggingface/transformers.git
@@ -19,4 +20,4 @@ dependencies:
       - wandb
       - matplotlib
       - seaborn
-      
+      - peft
