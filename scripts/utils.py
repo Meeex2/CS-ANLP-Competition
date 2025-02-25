@@ -48,8 +48,32 @@ def detect_script(text):
                 continue  # Skip the "Unknown" count.
         script_counts["Unknown"] += 1
 
-    max_lang = max(script_counts, key=script_counts.get)
-    return max_lang
+    return script_counts
+
+
+def filter_majority_script(text):
+    """
+    Keeps only the characters in the majority script so that text is uniform in its script.
+    """
+    script_counts = detect_script(text)
+    # Find the majority script (excluding "Unknown").
+    majority_script = max(
+        (script for script in script_counts if script != "Unknown"),
+        key=script_counts.get,
+    )
+
+    # Filter text to keep only characters in the majority script.
+    ranges, range_starts, _ = load_script_ranges()
+    filtered_text = []
+    for char in text:
+        code = ord(char)
+        idx = bisect.bisect_right(range_starts, code) - 1
+        if idx >= 0:
+            r = ranges[idx]
+            if r.start <= code <= r.end and r.language_group_name == majority_script:
+                filtered_text.append(char)
+
+    return "".join(filtered_text)
 
 
 def remove_links_and_tags(text: str):
