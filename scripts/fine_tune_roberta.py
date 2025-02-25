@@ -1,7 +1,7 @@
 # %% [markdown] {"jupyter":{"outputs_hidden":false}}
 # # Imports
 
-# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T07:37:59.530834Z","iopub.execute_input":"2025-02-25T07:37:59.531145Z","iopub.status.idle":"2025-02-25T07:37:59.535667Z","shell.execute_reply.started":"2025-02-25T07:37:59.531123Z","shell.execute_reply":"2025-02-25T07:37:59.534836Z"},"jupyter":{"outputs_hidden":false}}
+# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T13:29:17.758212Z","iopub.execute_input":"2025-02-25T13:29:17.758530Z","iopub.status.idle":"2025-02-25T13:29:38.210304Z","shell.execute_reply.started":"2025-02-25T13:29:17.758503Z","shell.execute_reply":"2025-02-25T13:29:38.209378Z"},"jupyter":{"outputs_hidden":false}}
 import os
 import random
 
@@ -24,15 +24,131 @@ from transformers import (
     DataCollatorWithPadding,
 )
 
-# %% [code] {"jupyter":{"outputs_hidden":false},"execution":{"iopub.status.busy":"2025-02-25T07:37:05.733486Z","iopub.execute_input":"2025-02-25T07:37:05.733842Z","iopub.status.idle":"2025-02-25T07:37:05.742425Z","shell.execute_reply.started":"2025-02-25T07:37:05.733812Z","shell.execute_reply":"2025-02-25T07:37:05.741788Z"}}
+# %% [code] {"jupyter":{"outputs_hidden":false},"execution":{"iopub.status.busy":"2025-02-25T13:29:38.211508Z","iopub.execute_input":"2025-02-25T13:29:38.212177Z","iopub.status.idle":"2025-02-25T13:29:38.221161Z","shell.execute_reply.started":"2025-02-25T13:29:38.212144Z","shell.execute_reply":"2025-02-25T13:29:38.220221Z"}}
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
 
+# %% [markdown]
+# # Utils
+
+# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T13:37:48.627954Z","iopub.execute_input":"2025-02-25T13:37:48.628281Z","iopub.status.idle":"2025-02-25T13:37:48.639437Z","shell.execute_reply.started":"2025-02-25T13:37:48.628259Z","shell.execute_reply":"2025-02-25T13:37:48.638514Z"}}
+import bisect
+import functools
+import re
+
+
+def to_codepoint(s):
+    if isinstance(s, str) and s.startswith("\\u"):
+        return int(s[2:], 16)
+    elif isinstance(s, str) and s.startswith("U+"):
+        return int(s[2:], 16)
+    else:
+        return int(s)
+
+
+@functools.lru_cache(maxsize=1)
+def load_script_ranges():
+    df = pd.read_csv("/kaggle/input/unicode-ranges/unicode_ranges.csv")
+    df["start"] = df["range_start"].apply(to_codepoint)
+    df["end"] = df["range_end"].apply(to_codepoint)
+    # Sort ranges by the start value.
+    ranges = sorted(df.itertuples(index=False), key=lambda r: r.start)
+    # Cache the unique language group names from the CSV.
+    lang_names = df["language_group_name"].unique().tolist()
+    # Also return a list of all start values for binary search.
+    range_starts = [r.start for r in ranges]
+    return ranges, range_starts, lang_names
+
+
+def detect_script(text):
+    ranges, range_starts, lang_names = load_script_ranges()
+
+    # Initialize counts for each language group and "Unknown".
+    script_counts = {lang: 0 for lang in lang_names}
+    script_counts["Unknown"] = 0
+
+    # Clean text (removing leading/trailing spaces and internal spaces).
+    text = text.strip().replace(" ", "")
+    for char in text:
+        code = ord(char)
+        # Locate the rightmost range whose start is <= code.
+        idx = bisect.bisect_right(range_starts, code) - 1
+        if idx >= 0:
+            r = ranges[idx]
+            if r.start <= code <= r.end:
+                script_counts[r.language_group_name] += 1
+                continue  # Skip the "Unknown" count.
+        script_counts["Unknown"] += 1
+
+    return script_counts
+
+
+def filter_majority_script(text):
+    """
+    Keeps only the characters in the majority script so that text is uniform in its script.
+    """
+    script_counts = detect_script(text)
+    # Find the majority script (excluding "Unknown").
+    majority_script = max(
+        (script for script in script_counts if script != "Unknown"),
+        key=script_counts.get,
+    )
+
+    # Filter text to keep only characters in the majority script.
+    ranges, range_starts, _ = load_script_ranges()
+    filtered_text = []
+    for char in text:
+        code = ord(char)
+        if char.isspace() or char in "()[]{}":
+            filtered_text.append(char)
+            continue
+        idx = bisect.bisect_right(range_starts, code) - 1
+        if idx >= 0:
+            r = ranges[idx]
+            if r.start <= code <= r.end and r.language_group_name == majority_script:
+                filtered_text.append(char)
+
+    return "".join(filtered_text)
+
+
+def remove_links_and_tags(text: str):
+    """
+    Removes internet links, tags that begin with @, and hashtags.
+    """
+    # Remove URLs (e.g., starting with http://, https://, or www.)
+    text = re.sub(r"http\S+|www\.\S+", "", text)
+    # Remove @tags (words that begin with @ followed by alphanumeric or underscore characters)
+    text = re.sub(r"@\w+", "", text)
+    # Remove hashtags (words that begin with # followed by alphanumeric or underscore characters)
+    text = re.sub(r"#\w+", "", text)
+    # Remove multiple spaces between words.
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def remove_emojis(text: str):
+    """
+    Removes emojis from the text.
+    """
+    emoji_pattern = re.compile(
+        "["
+        "\U0001f600-\U0001f64f"  # emoticons
+        "\U0001f300-\U0001f5ff"  # symbols & pictographs
+        "\U0001f680-\U0001f6ff"  # transport & map symbols
+        "\U0001f1e0-\U0001f1ff"  # flags (iOS)
+        "\U00002702-\U000027b0"
+        "\U000024c2-\U0001f251"
+        "]+",
+        flags=re.UNICODE,
+    )
+    return emoji_pattern.sub(r"", text)
+
+
 # %% [markdown] {"jupyter":{"outputs_hidden":false}}
 # # Hyperparameters
 
-# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T07:37:07.477563Z","iopub.execute_input":"2025-02-25T07:37:07.477900Z","iopub.status.idle":"2025-02-25T07:37:07.482469Z","shell.execute_reply.started":"2025-02-25T07:37:07.477871Z","shell.execute_reply":"2025-02-25T07:37:07.481579Z"},"jupyter":{"outputs_hidden":false}}
+# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T13:37:50.905562Z","iopub.execute_input":"2025-02-25T13:37:50.905880Z","iopub.status.idle":"2025-02-25T13:37:50.910192Z","shell.execute_reply.started":"2025-02-25T13:37:50.905853Z","shell.execute_reply":"2025-02-25T13:37:50.909432Z"},"jupyter":{"outputs_hidden":false}}
 # ----- Model and Data Paths -----
 # MODEL_NAME = "papluca/xlm-roberta-base-language-detection"
 MODEL_NAME = "FacebookAI/xlm-roberta-large"
@@ -60,7 +176,7 @@ DECAY_EPOCHS = NUM_TRAIN_EPOCHS - WARMUP_EPOCHS - STABLE_EPOCHS
 # %% [markdown] {"jupyter":{"outputs_hidden":false}}
 # # Dataset
 
-# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T07:37:09.021617Z","iopub.execute_input":"2025-02-25T07:37:09.021962Z","iopub.status.idle":"2025-02-25T07:37:09.029928Z","shell.execute_reply.started":"2025-02-25T07:37:09.021934Z","shell.execute_reply":"2025-02-25T07:37:09.028939Z"},"jupyter":{"outputs_hidden":false}}
+# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T13:38:23.204358Z","iopub.execute_input":"2025-02-25T13:38:23.204645Z","iopub.status.idle":"2025-02-25T13:38:23.212837Z","shell.execute_reply.started":"2025-02-25T13:38:23.204624Z","shell.execute_reply":"2025-02-25T13:38:23.212031Z"},"jupyter":{"outputs_hidden":false}}
 import random
 
 import torch
@@ -78,6 +194,13 @@ class TextDataset(Dataset):
         """
         print(f"Loading data from {CSV_PATH} ...")
         self.data = pd.read_csv(CSV_PATH)
+
+        # ==== Clean data ====
+        self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
+        self.data["Text"] = self.data["Text"].apply(remove_emojis)
+        self.data["Text"] = self.data["Text"].apply(filter_majority_script)
+        # ====================
+
         self.tokenizer = tokenizer
         self.MAX_SEQ_LENGTH = MAX_SEQ_LENGTH
         self.AUGMENT = AUGMENT
@@ -126,10 +249,10 @@ class TextDataset(Dataset):
 
 
 # %% [markdown] {"jupyter":{"outputs_hidden":false}}
-# # Training preaeration
+# # Training preparation
 
 
-# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T07:45:35.929955Z","iopub.execute_input":"2025-02-25T07:45:35.930278Z","iopub.status.idle":"2025-02-25T07:45:42.206421Z","shell.execute_reply.started":"2025-02-25T07:45:35.930257Z","shell.execute_reply":"2025-02-25T07:45:42.205508Z"},"jupyter":{"outputs_hidden":false}}
+# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T13:38:25.065669Z","iopub.execute_input":"2025-02-25T13:38:25.065950Z","iopub.status.idle":"2025-02-25T13:39:25.415155Z","shell.execute_reply.started":"2025-02-25T13:38:25.065931Z","shell.execute_reply":"2025-02-25T13:39:25.414473Z"},"jupyter":{"outputs_hidden":false}}
 # Learning rate scheduling function
 def lr_lambda(epoch):
     if epoch < WARMUP_EPOCHS:
@@ -225,10 +348,10 @@ best_val_accuracy = 0.0
 global_step = 0
 epochs_without_improvement = 0
 
-# %% [markdown]
+# %% [markdown] {"jupyter":{"outputs_hidden":false}}
 # # Load previous trained model
 
-# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T07:45:45.664579Z","iopub.execute_input":"2025-02-25T07:45:45.664920Z","iopub.status.idle":"2025-02-25T07:45:50.610172Z","shell.execute_reply.started":"2025-02-25T07:45:45.664893Z","shell.execute_reply":"2025-02-25T07:45:50.609341Z"}}
+# %% [code] {"execution":{"iopub.status.busy":"2025-02-25T07:45:45.664579Z","iopub.execute_input":"2025-02-25T07:45:45.664920Z","iopub.status.idle":"2025-02-25T07:45:50.610172Z","shell.execute_reply.started":"2025-02-25T07:45:45.664893Z","shell.execute_reply":"2025-02-25T07:45:50.609341Z"},"jupyter":{"outputs_hidden":false}}
 print("Loading previous model...")
 # Load tokenizer
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
