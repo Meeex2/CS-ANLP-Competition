@@ -67,6 +67,9 @@ def filter_majority_script(text):
     filtered_text = []
     for char in text:
         code = ord(char)
+        if char.isspace() or char in "()[]{}":
+            filtered_text.append(char)
+            continue
         idx = bisect.bisect_right(range_starts, code) - 1
         if idx >= 0:
             r = ranges[idx]
@@ -89,3 +92,21 @@ def remove_links_and_tags(text: str):
     # Remove multiple spaces between words.
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
+
+def remove_emojis(text: str):
+    """
+    Removes emojis from the text.
+    """
+    emoji_pattern = re.compile(
+        "["
+        "\U0001f600-\U0001f64f"  # emoticons
+        "\U0001f300-\U0001f5ff"  # symbols & pictographs
+        "\U0001f680-\U0001f6ff"  # transport & map symbols
+        "\U0001f1e0-\U0001f1ff"  # flags (iOS)
+        "\U00002702-\U000027b0"
+        "\U000024c2-\U0001f251"
+        "]+",
+        flags=re.UNICODE,
+    )
+    return emoji_pattern.sub(r"", text)
