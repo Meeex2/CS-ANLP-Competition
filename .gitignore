@@ -5,8 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
-# LaTeX
+checkpoint_epoch_*
 *.aux
 *.bbl
 *.blg
@@ -14,6 +13,7 @@ __pycache__/
 *.out
 *.toc
 *.synctex.gz
+*.err
 
 # Distribution / packaging
 .Python
