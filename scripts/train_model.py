@@ -42,7 +42,7 @@ dataset = dataset.rename_column("Label", "labels")
 dataset = dataset.remove_columns(["ID", "Usage"])
 
 #train test split
-split_dataset = dataset["train"].train_test_split(test_size=0.2, stratify_by_column="labels")
+split_dataset = dataset["train"].train_test_split(test_size=0.2)
 
 #tokenization using "Text" column
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
@@ -94,8 +94,8 @@ class WeightedTrainer(Trainer):
 model = ModernBertForSequenceClassification.from_pretrained(
     MODEL_NAME,
     num_labels=len(unique_labels),
-    id2label={i: lbl for i, lbl in enumerate(unique_labels)},
-    label2id={lbl: i for i, lbl in enumerate(unique_labels)}
+    id2label={i: str(lbl) for i, lbl in enumerate(unique_labels)},
+    label2id={str(lbl) : i for i, lbl in enumerate(unique_labels)}
 ).to(device)
 
 
@@ -107,7 +107,7 @@ training_args = TrainingArguments(
     save_strategy="steps",
     save_steps=200,
     eval_steps=20,
-    learning_rate=1e-5,
+    learning_rate=1e-4,
     per_device_train_batch_size=BATCH_SIZE,
     per_device_eval_batch_size=BATCH_SIZE*2,
     num_train_epochs=NUM_EPOCHS,

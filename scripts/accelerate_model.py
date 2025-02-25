@@ -8,6 +8,7 @@ def main():
     from torch.utils.data import Dataset, DataLoader, random_split
     from accelerate import notebook_launcher
     from accelerate import Accelerator
+    import utils
     from sklearn.metrics import (
         accuracy_score,
         classification_report,
@@ -45,6 +46,8 @@ def main():
                 unique_labels = sorted(self.data["Label"].unique())
                 self.label2idx = {label: idx for idx, label in enumerate(unique_labels)}
                 self.idx2label = {idx: label for label, idx in self.label2idx.items()}
+            
+            
 
         def __len__(self):
             return len(self.data)
@@ -80,6 +83,22 @@ def main():
 
             return item
 
+
+    def remove_prefix_and_handle_classifier(state_dict):
+        """
+        Remove 'module.' prefix from state dict keys and handle classifier dimension mismatch.
+        """
+        new_state_dict = {}
+        for key, value in state_dict.items():
+            # Remove 'module.' prefix if present
+            if key.startswith('module.'):
+                new_key = key[7:]  # Remove 'module.' prefix
+            else:
+                new_key = key
+                
+            new_state_dict[new_key] = value
+        return new_state_dict
+
     
     # -------------------------------
     # 2. Utility Function to Plot Confusion Matrix
@@ -109,8 +128,8 @@ def main():
     accelerator = Accelerator()
 
     # Training hyperparameters
-    num_train_epochs = 13
-    learning_rate =2e-3
+    num_train_epochs = 40
+    learning_rate =2.5e-3
     weight_decay = 0.01
     per_device_train_batch_size = 732
     per_device_eval_batch_size = 732
@@ -177,7 +196,7 @@ def main():
     # Create optimizer. Here we use AdamW with weight decay.
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2, eta_min=1e-5)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=7e-5)
 
     # Prepare accelerate objects
     model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
@@ -243,7 +262,7 @@ def main():
         # Save best model (if desired)
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
-            best_model_state = model.state_dict()
+            best_model_state = remove_prefix_and_handle_classifier(model.state_dict())
             accelerator.print("Best model updated.")
 
          # ----- Save checkpoint for the current epoch -----
@@ -257,8 +276,13 @@ def main():
         tokenizer.save_pretrained(checkpoint_dir)
         
 
-    # (Optionally, reload the best model state)
-    accelerator.unwrap_model(model).load_state_dict(best_model_state)
+    try:
+        cleaned_state_dict = remove_prefix_and_handle_classifier(best_model_state)
+        accelerator.unwrap_model(model).load_state_dict(cleaned_state_dict, strict=False)
+        accelerator.print("Successfully loaded best model state")
+    except Exception as e:
+        accelerator.print(f"Warning: Could not load best model state: {str(e)}")
+        accelerator.print("Continuing with current model state")
 
     # ----- Save the Model and Tokenizer -----
     output_dir = "./lora_roberta_finetuned"
