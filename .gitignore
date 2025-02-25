@@ -11,6 +11,9 @@ checkpoint_epoch_*
 # Pytorch models
 *.pt
 
+# Pytorch models
+*.pt
+
 # LaTeX
 *.aux
 *.bbl
