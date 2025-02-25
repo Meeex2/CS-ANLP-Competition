@@ -94,19 +94,39 @@ def remove_links_and_tags(text: str):
     return text.strip()
 
 
-def remove_emojis(text: str):
+def remove_emojis(text: str, csv_path: str = "data/emoji_unicodes.csv") -> str:
     """
-    Removes emojis from the text.
+    Removes emojis from text using a CSV file containing emoji unicode codes.
+
+    Args:
+        text (str): Input text containing emojis
+        csv_path (str): Path to CSV file with emoji unicode codes
+
+    Returns:
+        str: Text with emojis removed
     """
-    emoji_pattern = re.compile(
-        "["
-        "\U0001f600-\U0001f64f"  # emoticons
-        "\U0001f300-\U0001f5ff"  # symbols & pictographs
-        "\U0001f680-\U0001f6ff"  # transport & map symbols
-        "\U0001f1e0-\U0001f1ff"  # flags (iOS)
-        "\U00002702-\U000027b0"
-        "\U000024c2-\U0001f251"
-        "]+",
-        flags=re.UNICODE,
-    )
-    return emoji_pattern.sub(r"", text)
+    # Read emoji codes from CSV
+    emoji_df = pd.read_csv(csv_path)
+
+    # Convert codes to actual unicode characters, handling space-separated codes
+    emoji_chars = []
+    for code in emoji_df["code"]:
+        # Split code if it contains multiple space-separated values
+        parts = code.split()
+        try:
+            # Convert each part to unicode character and combine
+            chars = "".join(chr(int(part, 16)) for part in parts)
+            emoji_chars.append(chars)
+        except ValueError:
+            continue  # Skip invalid codes
+
+    # Create regex pattern for all emoji characters
+    emoji_pattern = "|".join(map(re.escape, emoji_chars))
+
+    # Remove emojis from text
+    clean_text = re.sub(emoji_pattern, "", text)
+
+    # Remove any leftover empty spaces
+    clean_text = re.sub(r"\s+", " ", clean_text)
+
+    return clean_text.strip()
