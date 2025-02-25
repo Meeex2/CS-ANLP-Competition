@@ -54,12 +54,14 @@ def detect_script(text):
 
 def remove_links_and_tags(text: str):
     """
-    Removes internet links and tags that begin with @.
+    Removes internet links, tags that begin with @, and hashtags.
     """
     # Remove URLs (e.g., starting with http://, https://, or www.)
     text = re.sub(r"http\S+|www\.\S+", "", text)
     # Remove @tags (words that begin with @ followed by alphanumeric or underscore characters)
     text = re.sub(r"@\w+", "", text)
+    # Remove hashtags (words that begin with # followed by alphanumeric or underscore characters)
+    text = re.sub(r"#\w+", "", text)
     # Remove multiple spaces between words.
     text = re.sub(r"\s+", " ", text)
     return text.strip()
