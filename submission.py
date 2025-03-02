@@ -4,10 +4,10 @@ import torch
 import pandas as pd
 from torch.utils.data import DataLoader
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding
-from peft import PeftModel, PeftConfig
-from scripts.utils import remove_links_and_tags, remove_emojis, filter_majority_script
+
 from torch.utils.data import Dataset, DataLoader, random_split
 import random
+from scripts.utils import remove_links_and_tags, remove_emojis, filter_majority_script
 
 
 class TextDataset(Dataset):
@@ -27,9 +27,9 @@ class TextDataset(Dataset):
         self.augment = augment
         self.test = test  # Flag to indicate if this is a test dataset
 
-        # self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
+        self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
         # self.data["Text"] = self.data["Text"].apply(remove_emojis)
-        # self.data["Text"] = self.data["Text"].apply(filter_majority_script)
+        self.data["Text"] = self.data["Text"].apply(filter_majority_script)
 
         if not self.test:
             # Remove rows with missing labels and create a deterministic label mapping.
@@ -95,7 +95,7 @@ def find_best_checkpoint(base_dir):
                 if acc > best_acc:
                     best_acc = acc
                     best_checkpoint = entry_path
-    print(best_checkpoint)
+    
     if best_checkpoint is None:
         print("No valid checkpoint found; using base directory instead.")
         return base_dir
@@ -109,32 +109,26 @@ def find_best_checkpoint(base_dir):
 # -----------------------------
 def load_model_and_tokenizer(model_dir, num_labels):
     """
-    Load the LoRA-fine-tuned model and tokenizer from the specified directory.
+    Load the fine-tuned model and tokenizer from the specified directory.
     """
     print(f"Loading model and tokenizer from {model_dir}...")
 
     # Load the tokenizer from the local directory
     tokenizer = AutoTokenizer.from_pretrained(model_dir, local_files_only=True)
 
-    # Load the base model with the correct number of labels.
-    # 'ignore_mismatched_sizes' is used to bypass mismatches due to LoRA layers.
-    base_model = AutoModelForSequenceClassification.from_pretrained(
+    # Load the fine-tuned model
+    model = AutoModelForSequenceClassification.from_pretrained(
         model_dir,
         num_labels=num_labels,
-        ignore_mismatched_sizes=True,
-        local_files_only=False
+        local_files_only=True
     )
-
-    # Load the LoRA configuration and apply it to the base model
-    peft_config = PeftConfig.from_pretrained(model_dir)
-    model = PeftModel.from_pretrained(base_model, model_dir, config=peft_config)
 
     model.eval()
     return model, tokenizer
 
 
 # Define base model directory and number of labels used during training
-base_model_dir = "lora_roberta_finetuned"
+base_model_dir = "roberta_finetuned_preprocess"
 num_labels = 389  # Replace with your actual number of labels
 
 # Use the function to pick the checkpoint with the highest accuracy
@@ -206,6 +200,6 @@ submission_df = pd.DataFrame({
 # Define the output directory and save the CSV file
 output_dir = "./output"  # Change as needed
 os.makedirs(output_dir, exist_ok=True)
-submission_file_path = os.path.join(output_dir, "submission_continue_FT.csv")
+submission_file_path = os.path.join(output_dir, "submission_pre_full.csv")
 submission_df.to_csv(submission_file_path, index=False)
 print(f"Submission file saved to {submission_file_path}")

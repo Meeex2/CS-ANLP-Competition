@@ -37,9 +37,9 @@ def main():
             self.data = pd.read_csv(CSV_PATH)
 
             # ==== Clean data ====
-            #self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
+            self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
             # self.data["Text"] = self.data["Text"].apply(remove_emojis)
-            #self.data["Text"] = self.data["Text"].apply(filter_majority_script)
+            self.data["Text"] = self.data["Text"].apply(filter_majority_script)
             # ====================
 
             self.tokenizer = tokenizer
@@ -123,21 +123,17 @@ def main():
     
     # ----- Settings and Hyperparameters -----
     model_name = "papluca/xlm-roberta-base-language-detection"
-    # model_name = "FacebookAI/xlm-roberta-large"
-    # model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     csv_path = "data/train_submission.csv"
     max_length = 128
     augment = False  # set to True to enable data augmentation for training data
 
-    # ----- accelerator for multi gpu training -----
     accelerator = Accelerator(gradient_accumulation_steps=2)
 
-    # Training hyperparameters
     num_train_epochs = 40
-    learning_rate =6e-3
+    learning_rate = 6e-5    # Changed learning rate from 1e-2 to a lower value suitable for fine-tuning transformers
     weight_decay = 0.01
-    per_device_train_batch_size = 732
-    per_device_eval_batch_size = 732
+    per_device_train_batch_size = 500
+    per_device_eval_batch_size = 500
     logging_steps = 12
 
     # ----- Load Tokenizer and Prepare Dataset -----
@@ -177,22 +173,18 @@ def main():
         collate_fn=data_collator,
     )
 
-    # ----- Load the Model and Wrap with LoRA (PEFT) -----
+    # Remove these imports as they won't be needed
+    # from peft import LoraConfig, TaskType, get_peft_model
+
+    # Replace the model loading and LoRA configuration section with:
+    # ----- Load the Model -----
     accelerator.print("Loading model...")
     model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, num_labels=num_labels, ignore_mismatched_sizes=True
+        model_name, 
+        num_labels=num_labels, 
+        ignore_mismatched_sizes=True
     )
-
-    lora_config = LoraConfig(
-        task_type=TaskType.SEQ_CLS,  # Sequence classification task
-        inference_mode=False,
-        r=8,           # Rank of the LoRA update matrices (hyperparameter)
-        lora_alpha=32, # Scaling factor
-        lora_dropout=0.1,  # Dropout probability applied to LoRA layers
-        target_modules=["query", "value"],  # Target modules to apply LoRA on
-    )
-    model = get_peft_model(model, lora_config)
-    accelerator.print("LoRA-modified model loaded.")
+    accelerator.print("Model loaded.")
 
     # ----- Prepare for Training -----
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -201,7 +193,7 @@ def main():
     # Create optimizer. Here we use AdamW with weight decay.
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2, eta_min=1e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=1e-4)
 
     # Prepare accelerate objects
     model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
@@ -221,8 +213,8 @@ def main():
         
         for step, batch in enumerate(train_dataloader):
             with accelerator.accumulate(model):
-            # Move batch tensors to the device.
-            #batch = {k: v.to(device) for k, v in batch.items()}
+                # Move batch tensors to the device.
+                #batch = {k: v.to(device) for k, v in batch.items()}
 
                 outputs = model(**batch)
                 loss = outputs.loss
@@ -272,16 +264,25 @@ def main():
             best_model_state = remove_prefix_and_handle_classifier(model.state_dict())
             accelerator.print("Best model updated.")
 
-         # ----- Save checkpoint for the current epoch -----
-        checkpoint_dir = os.path.join("./lora_roberta_finetuned_preprocess", f"checkpoint_epoch_{epoch+1}_acc_{val_accuracy:.4f}")
-        os.makedirs(checkpoint_dir, exist_ok=True)
-        accelerator.print(f"Saving checkpoint to {checkpoint_dir} ...")
-        if hasattr(model, "module"):
-            model.module.save_pretrained(checkpoint_dir)
-        else:
-            model.save_pretrained(checkpoint_dir)
-        tokenizer.save_pretrained(checkpoint_dir)
-        
+            if val_accuracy > 0.85:
+                checkpoint_dir = os.path.join("./roberta_finetuned_preprocess", f"checkpoint_epoch_{epoch+1}_acc_{val_accuracy:.4f}")
+                os.makedirs(checkpoint_dir, exist_ok=True)
+                accelerator.print(f"Saving checkpoint to {checkpoint_dir} ...")
+                if hasattr(model, "module"):
+                    model.module.save_pretrained(checkpoint_dir)
+                else:
+                    model.save_pretrained(checkpoint_dir)
+                tokenizer.save_pretrained(checkpoint_dir)
+            '''
+            checkpoint_dir = os.path.join("./roberta_finetuned_preprocess", f"best_checkpoint_epoch_{epoch+1}_acc_{val_accuracy:.4f}")
+            os.makedirs(checkpoint_dir, exist_ok=True)
+            accelerator.print(f"Saving checkpoint to {checkpoint_dir} ...")
+            if hasattr(model, "module"):
+                model.module.save_pretrained(checkpoint_dir)
+            else:
+                model.save_pretrained(checkpoint_dir)
+            tokenizer.save_pretrained(checkpoint_dir)    
+            '''
 
     try:
         cleaned_state_dict = remove_prefix_and_handle_classifier(best_model_state)
@@ -292,7 +293,7 @@ def main():
         accelerator.print("Continuing with current model state")
 
     # ----- Save the Model and Tokenizer -----
-    output_dir = "./lora_roberta_finetuned"
+    output_dir = "./roberta_finetuned_preprocess"
     os.makedirs(output_dir, exist_ok=True)
     accelerator.print("Saving model and tokenizer...")
     if hasattr(model, "module"):
@@ -398,7 +399,7 @@ def main():
     )
 
     # Save submission file
-    submission_file_path = os.path.join(output_dir, "submission.csv")
+    submission_file_path = os.path.join(output_dir, "submission_full.csv")
     submission_df.to_csv(submission_file_path, index=False)
     print(f"Submission file saved to {submission_file_path}")
 

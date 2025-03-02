@@ -24,7 +24,7 @@ nvidia-smi -l 60 > gpu_usage.log 2>&1 &
 MONITOR_PID=$!
 
 # Run the training script with accelerate using 2 processes.
-accelerate launch --multi_gpu --mixed_precision "fp16" --num_processes 4 scripts/accelerate_model.py > nlp_kaggle_roberta_${SLURM_JOB_ID}.log
+accelerate launch --multi_gpu --mixed_precision "fp16" --num_processes 4 scripts/continue_model_full.py > nlp_kaggle_roberta_full${SLURM_JOB_ID}.log
 
 # After training completes, stop the GPU monitor.
 kill $MONITOR_PID

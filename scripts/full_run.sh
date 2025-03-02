@@ -5,8 +5,8 @@
 #SBATCH --gres=gpu:4                               # Request 2 GPUs
 #SBATCH --time=01:00:00                            # Time limit
 #SBATCH --mem=32G
-#SBATCH --output=nlp_kaggle_roberta.out       # Standard output (with job ID)
-#SBATCH --error=nlp_kaggle_roberta.err        # Standard error (with job ID)
+#SBATCH --output=nlp_kaggle_roberta_full.out       # Standard output (with job ID)
+#SBATCH --error=nlp_kaggle_roberta_full.err        # Standard error (with job ID)
 #SBATCH --mail-type=ALL                            # Send email on start, end and fail
 
 micromamba shell init --shell=bash
@@ -24,7 +24,7 @@ nvidia-smi -l 60 > gpu_usage.log 2>&1 &
 MONITOR_PID=$!
 
 # Run the training script with accelerate using 2 processes.
-accelerate launch --multi_gpu --mixed_precision "fp16" --num_processes 4 scripts/accelerate_model.py > nlp_kaggle_roberta_${SLURM_JOB_ID}.log
+accelerate launch --multi_gpu --mixed_precision "fp16" --num_processes 4 scripts/accelerate_full.py > nlp_kaggle_roberta_full_${SLURM_JOB_ID}.log
 
 # After training completes, stop the GPU monitor.
 kill $MONITOR_PID
