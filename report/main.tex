@@ -60,7 +60,7 @@ In Kaggle's cloud environment, we have access to two NVIDIA Tesla T4 GPUs \citep
     
     \item \textbf{Data Processing:} We set the maximum sequence length to 128 tokens. Random slicing is applied for texts exceeding 128 tokens to diversify the training examples.
     
-    \item \textbf{Training:} We train for 40 epochs with a learning rate of 4e-5 and weight decay of 0.01. Large batch sizes (320 samples per device) ensure stable gradient estimates. We use the AdamW optimizer with a learning rate scheduler that employs cosine annealing with warm restarts, where \( T_0 = 5 \), \( T_{\text{mult}} = 2 \), and \( \eta_{\text{min}} = 1\text{e-6} \).  We log training metrics every 100 steps.
+    \item \textbf{Training:} We train for 6 epochs with a learning rate of 4e-5 and weight decay of 0.01. Large batch sizes (320 samples per device) ensure stable gradient estimates. We use the AdamW optimizer with a learning rate scheduler that employs cosine annealing with warm restarts, where \( T_0 = 5 \), \( T_{\text{mult}} = 2 \), and \( \eta_{\text{min}} = 1\text{e-6} \).  We log training metrics every 100 steps.
     
     \item \textbf{LoRA parameters:}
     We use LoRA (Low-Rank Adaptation) for efficient fine-tuning. Key parameters include:
@@ -87,11 +87,13 @@ Macro Average & 0.88 & 0.88 & 0.88 \\
 Weighted Average & 0.88 & 0.87 & 0.87 \\
 \bottomrule
 \end{tabular}
-\caption{Overall evaluation metrics on the validation set.}
+\caption{Evaluation metrics on the validation set.}
 \label{tab:metrics}
 \end{table}
 
-We evaluated our model on a held-out validation set, achieving an overall accuracy of 0.88. Table~\ref{tab:metrics} shows the macro and weighted average metrics, both indicating strong performance across classes. However, a detailed classification report revealed that while certain languages (e.g., \texttt{abk}, \texttt{ace}, \texttt{ach}) reached near-perfect scores, others (e.g., \texttt{acm}, \texttt{afb}) performed less consistently, suggesting a need for further optimization for low-resource or highly similar dialects.
+We evaluated our model on a held-out validation set, achieving an overall accuracy of 0.88. Table~\ref{tab:metrics} shows the macro and weighted average metrics, both indicating strong performance across classes. However, a detailed classification report revealed that while certain languages (e.g., \texttt{abk}, \texttt{ace}, \texttt{ach}) reached near-perfect scores, others (e.g., \texttt{acm}, \texttt{afb}) performed less, suggesting a need for further optimization for low-resource or highly similar dialects.
+
+The rest of the f1-scores are displayed in the appendix figure~\ref{fig:f1_score_grid}. The distribution of f1-scores across labels shows that the model performs well on most languages, with a few exceptions. The model struggles with rare languages, which are underrepresented in the training data. This issue could be addressed by augmenting the training data or using ensemble methods to improve generalization.
 
 \begin{figure}[H]
     \centering
@@ -111,8 +113,31 @@ Figures~\ref{fig:val_loss} and \ref{fig:val_accuracy} illustrate the validation 
 
 \section*{Limitations}
 
-We initially attempted full fine-tuning but were limited by time and computational resources. Instead, we used LoRA for efficiency, though it has trade-offs. Our model's fixed maximum sequence length may affect performance on longer inputs. Evaluation was done on a single pre-trained model and data split. Ensemble methods and further hyperparameter tuning could improve performance, especially for underrepresented languages.
+We initially tried full fine-tuning but were constrained by resources. Using LoRA improved efficiency but had trade-offs. The fixed sequence length may impact longer inputs. Evaluation was on a single model and data split. Ensemble methods and more hyperparameter tuning could enhance performance, especially for underrepresented languages.
 
 \bibliography{custom}
 
+\clearpage
+\appendix
+\onecolumn
+\section*{Appendix: Scores for each label}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{f1_score_grid.png}
+    \caption{F1-Score Distribution, Sorted by F1-Score (12 Rare labels were not evaluated).}
+    \label{fig:f1_score_grid}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{recall_grid.png}
+    \caption{Recall Distribution}
+    \label{fig:recall_score_grid}
+\end{figure}
+ \begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{precision_grid.png}
+    \caption{Precision Distribution}
+    \label{fig:precision_score_grid}
+\end{figure}   
 \end{document}

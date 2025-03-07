@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main"] 1741336595.81219 "main.aux" "main.bbl" "main" 1741336597.17959 0
+["bibtex main"] 1741342267.50881 "main.aux" "main.bbl" "main" 1741342366.08402 0
   "./acl_natbib.bst" 1741332040 47709 d9d0ab22329e3318a3d1b2ae6abaab62 ""
   "./custom.bib" 1741332040 2442 2fc90c53a13492cad4c7a9689b2aa399 ""
-  "main.aux" 1741336597.03721 1307 7643601587c8c781abc75d38509a32ff "pdflatex"
+  "main.aux" 1741342365.94576 1605 302dc4dd87c8bd254ba7bbd9198497bf "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1741336595.85668 "/home/idriss/CS/CS-ANLP-Competition/report/main.tex" "main.pdf" "main" 1741336597.17976 0
-  "/home/idriss/CS/CS-ANLP-Competition/report/main.tex" 1741336590.72127 8242 3a2fe9f2b6bc957a8fbbffe02d90ffb9 ""
+["pdflatex"] 1741342363.70098 "/home/idriss/CS/CS-ANLP-Competition/report/main.tex" "main.pdf" "main" 1741342366.08421 0
+  "/home/idriss/CS/CS-ANLP-Competition/report/main.tex" 1741342363.83044 9204 f62526d30379d14b4532429ba9c5c677 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc" 1736268207 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc" 1736268207 7631 5169ff1acd97ff1c4ab83563c99f96f4 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1736268207 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -138,12 +138,15 @@
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1737650196.10284 5318467 8236939515598d005dfbcc2e1a40f206 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1737650177 7113001 7ea1afeed813dbdbcb902c8042b015f5 ""
   "emnlp2023.sty" 1741332040 11225 ae5adfd59a529472c745a2bfe7e4f9ec ""
+  "f1_score_grid.png" 1741341975.08113 214727 7dc7f1f4ae951a5cafde3cb72aecce3d ""
   "figures/new_ANLP_kaggle_validation_accuracy_over_epochs.png" 1741332040 144590 5b48383d1bcbd2c5d27b580cf1c259d5 ""
   "figures/new_ANLP_kaggle_validation_loss_over_epochs.png.png" 1741332040 140213 2af2b70e71253e511d9d247667b003e0 ""
-  "main.aux" 1741336597.03721 1307 7643601587c8c781abc75d38509a32ff "pdflatex"
-  "main.bbl" 1741336595.85122 2243 d79750e7bc52d99be0dd25e429ee6cea "bibtex main"
-  "main.out" 1741336596.511 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "main.tex" 1741336590.72127 8242 3a2fe9f2b6bc957a8fbbffe02d90ffb9 ""
+  "main.aux" 1741342365.94576 1605 302dc4dd87c8bd254ba7bbd9198497bf "pdflatex"
+  "main.bbl" 1741342267.54874 2243 d79750e7bc52d99be0dd25e429ee6cea "bibtex main"
+  "main.out" 1741342364.94777 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.tex" 1741342363.83044 9204 f62526d30379d14b4532429ba9c5c677 ""
+  "precision_grid.png" 1741341982.10841 215270 ef47e707ae4fdaeff884df9bdaa27003 ""
+  "recall_grid.png" 1741341978.44762 209192 98ad2a910c42e2d7513f6825c3b5ba91 ""
   (generated)
   "main.aux"
   "main.log"

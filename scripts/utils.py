@@ -94,16 +94,18 @@ def remove_links_and_tags(text: str):
     return text.strip()
 
 
-def remove_emojis(text: str, csv_path: str = "data/emoji_unicodes.csv") -> str:
+def remove_emojis(
+    text_series: pd.Series, csv_path: str = "data/emoji_unicodes.csv"
+) -> pd.Series:
     """
-    Removes emojis from text using a CSV file containing emoji unicode codes.
+    Removes emojis from a pandas Series of text using a CSV file containing emoji unicode codes.
 
     Args:
-        text (str): Input text containing emojis
+        text_series (pd.Series): Series of text containing emojis
         csv_path (str): Path to CSV file with emoji unicode codes
 
     Returns:
-        str: Text with emojis removed
+        pd.Series: Series with emojis removed from each text entry
     """
     # Read emoji codes from CSV
     emoji_df = pd.read_csv(csv_path)
@@ -123,10 +125,11 @@ def remove_emojis(text: str, csv_path: str = "data/emoji_unicodes.csv") -> str:
     # Create regex pattern for all emoji characters
     emoji_pattern = "|".join(map(re.escape, emoji_chars))
 
-    # Remove emojis from text
-    clean_text = re.sub(emoji_pattern, "", text)
+    # Function to remove emojis from a single text entry
+    def remove_emojis_from_text(text):
+        clean_text = re.sub(emoji_pattern, "", text)
+        clean_text = re.sub(r"\s+", " ", clean_text)
+        return clean_text.strip()
 
-    # Remove any leftover empty spaces
-    clean_text = re.sub(r"\s+", " ", clean_text)
-
-    return clean_text.strip()
+    # Apply the function to the entire Series
+    return text_series.apply(remove_emojis_from_text)
