@@ -131,7 +131,7 @@ def main():
 
     # Training hyperparameters
     num_train_epochs = 40
-    learning_rate = 6e-3
+    learning_rate = 4e-5
     weight_decay = 0.01
     per_device_train_batch_size = 360
     per_device_eval_batch_size = 360
@@ -201,7 +201,7 @@ def main():
     )
 
     scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-        optimizer, T_0=20, T_mult=2, eta_min=1e-4
+        optimizer, T_0=5, T_mult=2, eta_min=1e-6
     )
 
     # Prepare accelerate objects

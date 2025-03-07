@@ -14,6 +14,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{enumitem}
+\usepackage{amsmath}
 
 \title{Kaggle Competition Report: Language Identification via Text Classification}
 
@@ -23,6 +24,7 @@
     \texttt{\{abdellah.oumida, elisa.faure, idriss.mortadi, marianne.brugidou\}@student-cs.fr}
 }
 
+\bibliographystyle{acl_natbib}
 
 
 \begin{document}
@@ -30,6 +32,7 @@
 
 \begin{abstract}
 This report outlines our approach for the Advanced NLP Class Kaggle Competition, which involves predicting the language of a given text using the ISO-639-3 standard. Our solution employs the \texttt{xlm-roberta-base} model with parameter-efficient fine-tuning (LoRA), complemented by data augmentation and a cosine annealing scheduler. This method achieved a leaderboard score of \textbf{0.87996}.
+\end{abstract}
 
 \section{Introduction}
 Language identification is a crucial preprocessing step in many NLP applications. The Advanced NLP Class Kaggle Competition requires classifying a given text into one of 389 languages or dialects, which form a curated subset of the ISO-639-3 standard \citep{iso639-3}. This high-granularity classification presents challenges due to the large label space and diverse linguistic features. Our approach leverages a pre-trained multilingual transformer model, adapted through Low-Rank Adaptation (LoRA) \citep{hu2022lora}, to address these challenges efficiently.
@@ -57,7 +60,7 @@ In Kaggle's cloud environment, we have access to two NVIDIA Tesla T4 GPUs \citep
     
     \item \textbf{Data Processing:} We set the maximum sequence length to 128 tokens. Random slicing is applied for texts exceeding 128 tokens to diversify the training examples.
     
-    \item \textbf{Training:} We train for 40 epochs with a learning rate of 6e-3 and weight decay of 0.01. Large batch sizes (320 samples per device) ensure stable gradient estimates. We use the AdamW optimizer with a learning rate scheduler that employs cosine annealing with warm restarts, where \( T_0 = 20 \), \( T_{\text{mult}} = 2 \), and \( \eta_{\text{min}} = 1\text{e-4} \).  We log training metrics every 100 steps.
+    \item \textbf{Training:} We train for 40 epochs with a learning rate of 4e-5 and weight decay of 0.01. Large batch sizes (320 samples per device) ensure stable gradient estimates. We use the AdamW optimizer with a learning rate scheduler that employs cosine annealing with warm restarts, where \( T_0 = 5 \), \( T_{\text{mult}} = 2 \), and \( \eta_{\text{min}} = 1\text{e-6} \).  We log training metrics every 100 steps.
     
     \item \textbf{LoRA parameters:}
     We use LoRA (Low-Rank Adaptation) for efficient fine-tuning. Key parameters include:
@@ -104,13 +107,12 @@ We evaluated our model on a held-out validation set, achieving an overall accura
     \label{fig:val_accuracy}
 \end{figure}
 
-Figures~\ref{fig:val_loss} and \ref{fig:val_accuracy} illustrate the validation loss and accuracy trends across epochs. The validation loss decreases steadily down to 0.15, while the accuracy improves from up to 0.87, indicating consistent learning progress. These curves suggest that the chosen hyperparameters and learning rate schedule allowed for stable training without noticeable overfitting.
+Figures~\ref{fig:val_loss} and \ref{fig:val_accuracy} illustrate the validation loss and accuracy trends across epochs. The validation loss decreases steadily down to 0.15, while the accuracy improves up to 0.87, indicating consistent learning progress. These curves suggest that the chosen hyperparameters and learning rate schedule allowed for stable training without noticeable overfitting.
 
 \section*{Limitations}
 
 We initially attempted full fine-tuning but were limited by time and computational resources. Instead, we used LoRA for efficiency, though it has trade-offs. Our model's fixed maximum sequence length may affect performance on longer inputs. Evaluation was done on a single pre-trained model and data split. Ensemble methods and further hyperparameter tuning could improve performance, especially for underrepresented languages.
 
-\bibliographystyle{acl_natbib}
 \bibliography{custom}
 
 \end{document}
