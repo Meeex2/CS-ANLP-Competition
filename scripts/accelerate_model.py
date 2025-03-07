@@ -1,30 +1,36 @@
 def main():
     import os
     import random
+
     import matplotlib.pyplot as plt
     import pandas as pd
     import seaborn as sns
     import torch
-    from torch.utils.data import Dataset, DataLoader, random_split
-    from accelerate import notebook_launcher
     from accelerate import Accelerator
-    from utils import remove_links_and_tags, remove_emojis, filter_majority_script
+
+    # Import the PEFT (Parameter-Efficient Fine-Tuning) components for LoRA.
+    from peft import LoraConfig, TaskType, get_peft_model
     from sklearn.metrics import (
         accuracy_score,
         classification_report,
         confusion_matrix,
         precision_recall_fscore_support,
     )
-    
-    # Import the PEFT (Parameter-Efficient Fine-Tuning) components for LoRA.
-    from peft import LoraConfig, TaskType, get_peft_model
-    from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding
-    
+    from torch.utils.data import DataLoader, Dataset, random_split
+    from transformers import (
+        AutoModelForSequenceClassification,
+        AutoTokenizer,
+        DataCollatorWithPadding,
+    )
+    from utils import filter_majority_script, remove_links_and_tags
+
     # -------------------------------
     # 1. Dataset Definition
     # -------------------------------
     class TextDataset(Dataset):
-        def __init__(self, CSV_PATH, tokenizer, MAX_SEQ_LENGTH, AUGMENT=False, test=False):
+        def __init__(
+            self, CSV_PATH, tokenizer, MAX_SEQ_LENGTH, AUGMENT=False, test=False
+        ):
             """
             Args:
                 CSV_PATH (str): Path to the CSV file. The CSV should have columns 'Text' and optionally 'Label'.
@@ -88,41 +94,44 @@ def main():
 
             return item
 
-
     def remove_prefix_and_handle_classifier(state_dict):
         """
-        Remove 'module.' prefix from state dict keys and handle classifier dimension mismatch.
+        Processes a state dictionary by removing the 'module.' prefix from keys and handling classifier dimension mismatches.
+
+        Args:
+            state_dict (dict): The state dictionary containing model parameters.
+
+        Returns:
+            dict: A new state dictionary with updated keys.
         """
         new_state_dict = {}
         for key, value in state_dict.items():
             # Remove 'module.' prefix if present
-            if key.startswith('module.'):
+            if key.startswith("module."):
                 new_key = key[7:]  # Remove 'module.' prefix
             else:
                 new_key = key
-                
+
             new_state_dict[new_key] = value
         return new_state_dict
-    
-    
+
     # -------------------------------
     # 2. Main Training and Evaluation Loop
     # -------------------------------
-    
+
     # ----- Settings and Hyperparameters -----
     model_name = "papluca/xlm-roberta-base-language-detection"
-    # model_name = "FacebookAI/xlm-roberta-large"
-    # model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     csv_path = "data/train_submission.csv"
+    test_csv_path = "data/test_without_labels.csv"
     max_length = 128
     augment = True  # set to True to enable data augmentation for training data
 
     # ----- accelerator for multi gpu training -----
-    accelerator = Accelerator(gradient_accumulation_steps=2)
+    accelerator = Accelerator()
 
     # Training hyperparameters
     num_train_epochs = 40
-    learning_rate =6e-3
+    learning_rate = 6e-3
     weight_decay = 0.01
     per_device_train_batch_size = 360
     per_device_eval_batch_size = 360
@@ -174,8 +183,8 @@ def main():
     lora_config = LoraConfig(
         task_type=TaskType.SEQ_CLS,  # Sequence classification task
         inference_mode=False,
-        r=8,           # Rank of the LoRA update matrices (hyperparameter)
-        lora_alpha=32, # Scaling factor
+        r=8,  # Rank of the LoRA update matrices (hyperparameter)
+        lora_alpha=32,  # Scaling factor
         lora_dropout=0.1,  # Dropout probability applied to LoRA layers
         target_modules=["query", "value"],  # Target modules to apply LoRA on
     )
@@ -187,9 +196,13 @@ def main():
     model.to(device)
 
     # Create optimizer. Here we use AdamW with weight decay.
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=learning_rate, weight_decay=weight_decay
+    )
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=20, T_mult=2, eta_min=1e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=20, T_mult=2, eta_min=1e-4
+    )
 
     # Prepare accelerate objects
     model, optimizer, train_dataloader, val_dataloader, scheduler = accelerator.prepare(
@@ -200,34 +213,29 @@ def main():
     best_val_accuracy = 0.0
     global_step = 0
 
-    
-
     # ----- Training Loop -----
     for epoch in range(num_train_epochs):
         model.train()
         running_loss = 0.0
-        
+
         for step, batch in enumerate(train_dataloader):
-            with accelerator.accumulate(model):
-            # Move batch tensors to the device.
-            #batch = {k: v.to(device) for k, v in batch.items()}
+            outputs = model(**batch)
+            loss = outputs.loss
+            accelerator.backward(loss)
 
-                outputs = model(**batch)
-                loss = outputs.loss
-                #loss.backward()
-                accelerator.backward(loss)
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
 
-                optimizer.step()
-                scheduler.step()
-                optimizer.zero_grad()
+            running_loss += loss.item()
+            global_step += 1
 
-                running_loss += loss.item()
-                global_step += 1
-
-                if global_step % logging_steps == 0:
-                    avg_loss = running_loss / logging_steps
-                    accelerator.print(f"Epoch [{epoch+1}/{num_train_epochs}], Step [{step+1}/{len(train_dataloader)}], Loss: {avg_loss:.4f}")
-                    running_loss = 0.0
+            if global_step % logging_steps == 0:
+                avg_loss = running_loss / logging_steps
+                accelerator.print(
+                    f"Epoch [{epoch + 1}/{num_train_epochs}], Step [{step + 1}/{len(train_dataloader)}], Loss: {avg_loss:.4f}"
+                )
+                running_loss = 0.0
 
         # ----- Validation at the End of Each Epoch -----
         model.eval()
@@ -246,13 +254,13 @@ def main():
                 preds = torch.argmax(logits, dim=-1)
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(batch["labels"].cpu().numpy())
-                #all_preds.append(accelerator.gather(preds))
-                #all_labels.append(accelerator.gather(batch["labels"]))
                 num_batches += 1
 
         avg_eval_loss = eval_loss / num_batches
         val_accuracy = accuracy_score(all_labels, all_preds)
-        accelerator.print(f"Epoch [{epoch+1}/{num_train_epochs}] Validation Loss: {avg_eval_loss:.4f} | Accuracy: {val_accuracy:.4f}")
+        accelerator.print(
+            f"Epoch [{epoch + 1}/{num_train_epochs}] Validation Loss: {avg_eval_loss:.4f} | Accuracy: {val_accuracy:.4f}"
+        )
 
         # Save best model (if desired)
         if val_accuracy > best_val_accuracy:
@@ -260,8 +268,11 @@ def main():
             best_model_state = remove_prefix_and_handle_classifier(model.state_dict())
             accelerator.print("Best model updated.")
 
-         # ----- Save checkpoint for the current epoch -----
-        checkpoint_dir = os.path.join("./lora_roberta_finetuned_preprocess", f"checkpoint_epoch_{epoch+1}_acc_{val_accuracy:.4f}")
+        # ----- Save checkpoint for the current epoch -----
+        checkpoint_dir = os.path.join(
+            "./lora_roberta_finetuned_preprocess",
+            f"checkpoint_epoch_{epoch + 1}_acc_{val_accuracy:.4f}",
+        )
         os.makedirs(checkpoint_dir, exist_ok=True)
         accelerator.print(f"Saving checkpoint to {checkpoint_dir} ...")
         if hasattr(model, "module"):
@@ -269,18 +280,19 @@ def main():
         else:
             model.save_pretrained(checkpoint_dir)
         tokenizer.save_pretrained(checkpoint_dir)
-        
 
     try:
         cleaned_state_dict = remove_prefix_and_handle_classifier(best_model_state)
-        accelerator.unwrap_model(model).load_state_dict(cleaned_state_dict, strict=False)
+        accelerator.unwrap_model(model).load_state_dict(
+            cleaned_state_dict, strict=False
+        )
         accelerator.print("Successfully loaded best model state")
     except Exception as e:
         accelerator.print(f"Warning: Could not load best model state: {str(e)}")
         accelerator.print("Continuing with current model state")
 
     # ----- Save the Model and Tokenizer -----
-    output_dir = "./lora_roberta_finetuned"
+    output_dir = "./output"
     os.makedirs(output_dir, exist_ok=True)
     accelerator.print("Saving model and tokenizer...")
     if hasattr(model, "module"):
@@ -301,8 +313,6 @@ def main():
             outputs = model(**batch)
             logits = outputs.logits
             preds = torch.argmax(logits, dim=-1)
-            #all_preds.append(accelerator.gather(preds))
-            #all_labels.append(accelerator.gather(batch["labels"]))
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(batch["labels"].cpu().numpy())
 
@@ -319,10 +329,15 @@ def main():
     accelerator.print(f"Validation F1 Score (macro):    {f1:.4f}")
 
     # Generate the full classification report as a dictionary.
-    report_dict = classification_report(all_labels, all_preds, output_dict=True, zero_division=0)
+    report_dict = classification_report(
+        all_labels, all_preds, output_dict=True, zero_division=0
+    )
     # accelerator.print the report to console.
-    accelerator.print("\nClassification Report:\n", classification_report(all_labels, all_preds, zero_division=0))
-    
+    accelerator.print(
+        "\nClassification Report:\n",
+        classification_report(all_labels, all_preds, zero_division=0),
+    )
+
     # Convert the classification report into a DataFrame and save it as CSV.
     report_df = pd.DataFrame(report_dict).transpose()
     report_csv_path = os.path.join(output_dir, "classification_report.csv")
@@ -343,18 +358,13 @@ def main():
     plt.savefig(os.path.join(output_dir, "confusion_matrix.png"))
     plt.show()
 
-    import os
-
-    test_CSV_PATH = "data/test_without_labels.csv"
-
-    MAX_SEQ_LENGTH = 128
-    PER_DEVICE_EVAL_BATCH_SIZE = 64
-
     # Load test dataset
-    test_dataset = TextDataset(test_CSV_PATH, tokenizer, MAX_SEQ_LENGTH, AUGMENT=False, test=True)
+    test_dataset = TextDataset(
+        test_csv_path, tokenizer, max_length, AUGMENT=False, test=True
+    )
     test_dataloader = DataLoader(
         test_dataset,
-        batch_size=PER_DEVICE_EVAL_BATCH_SIZE,
+        batch_size=per_device_eval_batch_size,
         shuffle=False,
         collate_fn=data_collator,
     )
@@ -373,7 +383,9 @@ def main():
 
             # Print progress every 100 batches
             if (batch_idx + 1) % 100 == 0:
-                accelerator.print(f"Processed {batch_idx + 1}/{len(test_dataloader)} batches...")
+                accelerator.print(
+                    f"Processed {batch_idx + 1}/{len(test_dataloader)} batches..."
+                )
 
     accelerator.print("Test prediction completed!")
 
@@ -389,6 +401,7 @@ def main():
     submission_file_path = os.path.join(output_dir, "submission.csv")
     submission_df.to_csv(submission_file_path, index=False)
     print(f"Submission file saved to {submission_file_path}")
+
 
 if __name__ == "__main__":
     main()
