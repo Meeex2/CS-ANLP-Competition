@@ -10,6 +10,8 @@ The repository is organized into the following directories:
 - **report**: Includes the project report and any related documentation.
 - **output**: Stores the results, logs, and generated outputs.
 
+Notebooks are also available for data analysis and tests with classic data science models.
+
 ## Installation
 
 To install the required dependencies, run the following command:
