@@ -262,7 +262,7 @@ def main():
             f"Epoch [{epoch + 1}/{num_train_epochs}] Validation Loss: {avg_eval_loss:.4f} | Accuracy: {val_accuracy:.4f}"
         )
 
-        # Save best model (if desired)
+        # Save best model
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
             best_model_state = remove_prefix_and_handle_classifier(model.state_dict())
