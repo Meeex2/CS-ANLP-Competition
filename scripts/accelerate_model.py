@@ -127,7 +127,7 @@ def main():
     # model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     csv_path = "data/train_submission.csv"
     max_length = 128
-    augment = False  # set to True to enable data augmentation for training data
+    augment = True  # set to True to enable data augmentation for training data
 
     # ----- accelerator for multi gpu training -----
     accelerator = Accelerator(gradient_accumulation_steps=2)
@@ -136,9 +136,9 @@ def main():
     num_train_epochs = 40
     learning_rate =6e-3
     weight_decay = 0.01
-    per_device_train_batch_size = 732
-    per_device_eval_batch_size = 732
-    logging_steps = 12
+    per_device_train_batch_size = 360
+    per_device_eval_batch_size = 360
+    logging_steps = 100
 
     # ----- Load Tokenizer and Prepare Dataset -----
     accelerator.print("Loading tokenizer...")
