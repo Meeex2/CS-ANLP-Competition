@@ -268,19 +268,6 @@ def main():
             best_model_state = remove_prefix_and_handle_classifier(model.state_dict())
             accelerator.print("Best model updated.")
 
-        # ----- Save checkpoint for the current epoch -----
-        checkpoint_dir = os.path.join(
-            "./lora_roberta_finetuned_preprocess",
-            f"checkpoint_epoch_{epoch + 1}_acc_{val_accuracy:.4f}",
-        )
-        os.makedirs(checkpoint_dir, exist_ok=True)
-        accelerator.print(f"Saving checkpoint to {checkpoint_dir} ...")
-        if hasattr(model, "module"):
-            model.module.save_pretrained(checkpoint_dir)
-        else:
-            model.save_pretrained(checkpoint_dir)
-        tokenizer.save_pretrained(checkpoint_dir)
-
     try:
         cleaned_state_dict = remove_prefix_and_handle_classifier(best_model_state)
         accelerator.unwrap_model(model).load_state_dict(
