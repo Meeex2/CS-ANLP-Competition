@@ -37,9 +37,9 @@ def main():
             self.data = pd.read_csv(CSV_PATH)
 
             # ==== Clean data ====
-            #self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
-            # self.data["Text"] = self.data["Text"].apply(remove_emojis)
-            #self.data["Text"] = self.data["Text"].apply(filter_majority_script)
+            self.data["Text"] = self.data["Text"].apply(remove_links_and_tags)
+            # self.data["Text"] = self.data["Text"].apply(remove_emojis)  # Very slow ! not used
+            self.data["Text"] = self.data["Text"].apply(filter_majority_script)
             # ====================
 
             self.tokenizer = tokenizer
@@ -103,22 +103,10 @@ def main():
                 
             new_state_dict[new_key] = value
         return new_state_dict
-
-    
-    # -------------------------------
-    # 2. Utility Function to Plot Confusion Matrix
-    # -------------------------------
-    def plot_confusion_matrix(cm, title="Confusion matrix", cmap=plt.cm.Blues):
-        plt.figure(figsize=(12, 10))
-        sns.heatmap(cm, annot=False, fmt="d", cmap=cmap)
-        plt.title(title)
-        plt.ylabel("True label")
-        plt.xlabel("Predicted label")
-        plt.show()
     
     
     # -------------------------------
-    # 3. Main Training and Evaluation Loop
+    # 2. Main Training and Evaluation Loop
     # -------------------------------
     
     # ----- Settings and Hyperparameters -----
